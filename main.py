@@ -11,19 +11,21 @@ import ussl as ssl
 # but if the attacker can modify the trafic, then we're in a trouble
 # since the attacker can implement a man-in-the-middle attack
 
-CONFIG_MODE_WARNING = "Warning: don't forget to turn off config mode"
-NO_WARNING = ""
-
-# an HTTP response which contains a page with HTML forms with settings
-FORM = b"""\
+HTTP_RESPONSE = b"""\
 HTTP/1.0 200 OK
+Content-Length: %d
 
+%s
+"""
+
+# HTML form for settings
+FORM = b"""\
 <html>
  <head>
   <title>Watering system configuration</title>
  </head>
  <body>
-  <p>%s</p>
+  <p>Watering system configuration</p>
   <form method="post">
    Enter SSID and password:</br>
    SSID:&nbsp;<input name="ssid" type="text"/></br>
@@ -35,15 +37,12 @@ HTTP/1.0 200 OK
 """
 
 BYE = b"""\
-HTTP/1.0 200 OK
-
 <html>
  <head>
-  <title>Yellow Duck configuration</title>
+  <title>Watering system configuration</title>
  </head>
  <body>
-  <p>%s</p>
-  <p>The board is going to reboot, and try to connect to specified network.</p>
+  <p>The board is going to reboot.</p>
  </body>
 </html>
 """
@@ -65,18 +64,12 @@ DELAY = 5
 REBOOT_DELAY = 5
 
 # returns an HTTP response with a form
-def get_form_html():
-    if is_config_mode():
-        return FORM % CONFIG_MODE_WARNING
-    else:
-        return FORM % NO_WARNING
+def get_form():
+    return HTTP_RESPONSE % (len(FORM), FORM)
 
 # returns an HTTP response with a bye message
-def get_bye_html():
-    if is_config_mode():
-        return BYE % CONFIG_MODE_WARNING
-    else:
-        return BYE % NO_WARNING
+def get_bye():
+    return HTTP_RESPONSE % (len(BYE), BYE)
 
 # reboot the board after some delay
 def reboot():
@@ -151,31 +144,28 @@ def start_local_server(use_stream = True):
                         params = data.split('&')
                         ssid = None
                         password = None
-                        key = None
                         for param in params:
                             if param.startswith('ssid='):
                                 ssid = param.split('=')[1]
                             if param.startswith('pass='):
                                 password = param.split('=')[1]
-                            if param.startswith('key='):
-                                key = param.split('=')[1]
 
                         # if ssid/password received, store them to a file
                         # and reset the board to try new ssid/password
                         if ssid and password:
                             write_wifi_config(ssid, password)
-                            client_s.write(get_bye_html())
+                            client_s.write(get_bye())
                             client_s.close()
                             reboot()
 
                 # print out html form
                 if req:
-                    client_s.write(get_form_html())
+                    client_s.write(get_form())
             except Exception as e:
                 print("exception: ", e)
         else:
             print(client_s.recv(4096))
-            client_s.send(get_form_html())
+            client_s.send(get_form())
 
         # close the connection
         client_s.close()
@@ -190,8 +180,8 @@ def write_wifi_config(ssid, password):
 def start_access_point():
     import network
     ap = network.WLAN(network.AP_IF)
-    ap.config(essid=ACCESS_POINT_SSID, password=ACCESS_POINT_PASSWORD, authmode=network.AUTH_WPA2_PSK)
     ap.active(True)
+    ap.config(essid=ACCESS_POINT_SSID, password=ACCESS_POINT_PASSWORD)
 
 # read ssid/password from a file, and try to connect
 # returns true in case of successful connection
