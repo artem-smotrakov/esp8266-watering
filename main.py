@@ -18,40 +18,42 @@ Content-Length: %d
 %s
 """
 
+HTTP_REDIRECT = b"""\
+HTTP/1.0 200 OK
+Location: /
+
+
+"""
+
 # HTML form for settings
 FORM = b"""\
 <html>
- <head>
-  <title>Watering system configuration</title>
- </head>
- <body>
-  <p>Watering system configuration</p>
-  <form method="post">
-   Enter SSID and password:</br>
-   SSID:&nbsp;<input name="ssid" type="text"/></br>
-   Password:&nbsp;<input name="pass" type="password"/></br>
-   <input type="submit" value="Submit">
-  </form>
- </body>
+    <head>
+        <title>Watering system configuration</title>
+    </head>
+    <body>
+        <h2>Watering system configuration</h2>
+        <h3>Wi-Fi settings</h3>
+        <div>
+            <form method="post">
+                <p>SSID:&nbsp;<input name="ssid" type="text"/></p>
+                <p>Password:&nbsp;<input name="pass" type="password"/></p>
+                <p><input type="submit" value="Update"></p>
+            </form>
+        </div>
+    </body>
 </html>
 """
 
-BYE = b"""\
-<html>
- <head>
-  <title>Watering system configuration</title>
- </head>
- <body>
-  <p>The board is going to reboot.</p>
- </body>
-</html>
-"""
-
-WIFI_CONFIG = 'wifi.conf'
+CONFIG = 'main.conf'
 SERVER_PORT = 443
 INDENT = '    '
+
+# make sure that the password is not too short
+# otherwise, an OSError occurs while setting up a wi-fi access point
 ACCESS_POINT_SSID = 'esp8266-watering'
-ACCESS_POINT_PASSWORD = 'esp8266'
+ACCESS_POINT_PASSWORD = 'helloesp8266'
+
 CONFIG_MODE_SWITCH_PIN = 5
 PUMP_SWITCH_PIN = 4
 DHT22_PIN = 14
@@ -66,10 +68,6 @@ REBOOT_DELAY = 5
 # returns an HTTP response with a form
 def get_form():
     return HTTP_RESPONSE % (len(FORM), FORM)
-
-# returns an HTTP response with a bye message
-def get_bye():
-    return HTTP_RESPONSE % (len(BYE), BYE)
 
 # reboot the board after some delay
 def reboot():
@@ -117,7 +115,8 @@ def start_local_server(use_stream = True):
             # write() methods
             #
             # browsers are prone to terminate SSL connection abruptly if they
-            # see unknown certificate, etc. We must continue in such case -
+            # see unknown certificate, etc.
+            # we must continue in such case -
             # next request they issue will likely be more well-behaving and
             # will succeed
             try:
@@ -137,30 +136,25 @@ def start_local_server(use_stream = True):
                         length = int(header.split(':')[1])
                     print(INDENT + header)
 
-                # process data from the web form
                 if req.startswith('POST') and length > 0:
+                    # process data from the web form
                     data = client_s.read(length).decode('utf-8')
                     if data:
+                        values = read_config()
                         params = data.split('&')
-                        ssid = None
-                        password = None
                         for param in params:
                             if param.startswith('ssid='):
-                                ssid = param.split('=')[1]
+                                config['ssid'] = param.split('=')[1]
                             if param.startswith('pass='):
-                                password = param.split('=')[1]
+                                config['password'] = param.split('=')[1]
 
-                        # if ssid/password received, store them to a file
-                        # and reset the board to try new ssid/password
-                        if ssid and password:
-                            write_wifi_config(ssid, password)
-                            client_s.write(get_bye())
-                            client_s.close()
-                            reboot()
-
-                # print out html form
-                if req:
+                        write_config(values)
+                        client_s.write(HTTP_REDIRECT)
+                else:
+                    # otherwise, print out html form
                     client_s.write(get_form())
+
+                client_s.close()
             except Exception as e:
                 print("exception: ", e)
         else:
@@ -170,35 +164,37 @@ def start_local_server(use_stream = True):
         # close the connection
         client_s.close()
 
-# store ssid/password to a file
-def write_wifi_config(ssid, password):
-    f = open(WIFI_CONFIG, 'w')
-    f.write(ssid + '/' + password)
+def write_config(values):
+    import ujson
+    f = open(CONFIG, 'w')
+    f.write(ujson.dump(values))
+    f.close()
+
+# read config from a file
+def read_config():
+    import os
+    if not CONFIG in os.listdir():
+        print('cannot find ' + CONFIG)
+        return {}
+    import ujson
+    f = open(CONFIG)
+    values = ujson.load(f.read())
     f.close()
 
 # start wifi access point
 def start_access_point():
     import network
     ap = network.WLAN(network.AP_IF)
-    ap.active(True)
-    ap.config(essid=ACCESS_POINT_SSID, password=ACCESS_POINT_PASSWORD)
+    ap.config(essid=ACCESS_POINT_SSID, password=ACCESS_POINT_PASSWORD, authmode=network.AUTH_WPA_WPA2_PSK)
 
 # read ssid/password from a file, and try to connect
 # returns true in case of successful connection
 def connect_to_wifi():
-    # read ssid/password from a config file
-    import os
-    if not WIFI_CONFIG in os.listdir():
-        print('cannot find ' + WIFI_CONFIG)
-        return False
-
-    f = open(WIFI_CONFIG)
-    data = f.read()
-    f.close()
-    parts = data.split('/')
-    ssid = parts[0]
-    password = parts[1]
-    if not ssid or not password:
+    config = read_config()
+    if not config:
+        print('config is empty')
+        return
+    if not config.ssid or not config.password:
         print('could not find ssid/password in config file')
         return False
 
@@ -208,7 +204,7 @@ def connect_to_wifi():
     print('connecting to network: %s' % ssid)
     nic = network.WLAN(network.STA_IF)
     nic.active(True)
-    nic.connect(ssid, password)
+    nic.connect(config.ssid, config.password)
 
     # wait some time
     attempt = 0
