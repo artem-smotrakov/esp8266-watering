@@ -14,9 +14,8 @@ import ussl as ssl
 class HttpsServer:
 
     def __init__(self, handler, port = 433):
-        self.handler = hanler
+        self.handler = handler
         self.port = port
-        self.use_stream = use_stream
 
     # start a web server which asks for wifi ssid/password, and other settings
     # it stores settings to a config file
@@ -66,8 +65,8 @@ class HttpsServer:
                     name = parts[0].strip()
                     value = parts[1].strip()
                     headers[name] = value
-                    if header_name == 'content-length'):
-                        length = int(header.split(':')[1])
+                    if header_name == 'content-length':
+                        length = int(value)
 
                 data = client_s.read(length).decode('utf-8')
 

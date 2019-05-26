@@ -68,7 +68,7 @@ class ConnectionHandler:
 # returns true if config mode enabled
 def is_config_mode(config):
     import util
-    return util.is_switch_on(config['config_mode_switch_pin'])
+    return util.is_switch_on(config.get('config_mode_switch_pin'))
 
 
 # entry point
@@ -83,11 +83,11 @@ weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
 
 # check if we're in configuration mode
 if is_config_mode(config):
-    import HttpsServer from https
+    from https import HttpsServer
     print('enabled configuration mode')
     util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
     handler = ConnectionHandler(config)
-    HttpServer(handler).start()
+    HttpsServer(handler).start()
     util.reboot()
 
 # main loop
