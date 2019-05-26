@@ -71,7 +71,7 @@ class HttpsServer:
 
                 data = client_s.read(length).decode('utf-8')
 
-                self.handler(client_s, status_line, headers, data)
+                self.handler.handle(client_s, status_line, headers, data)
 
                 client_s.close()
             except Exception as e:
