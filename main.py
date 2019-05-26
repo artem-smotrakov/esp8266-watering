@@ -170,7 +170,7 @@ def read_config():
         return {}
     import ujson
     f = open(CONFIG)
-    config = ujson.load(f.read())
+    config = ujson.load(f)
     f.close()
     return config
 
@@ -213,28 +213,6 @@ def connect_to_wifi(config):
         print('connection failed')
         return False
 
-# turns off the specified pin
-def turn_off_pin(pin_number):
-    from machine import Pin
-    pin = Pin(pin_number, Pin.OUT)
-    pin.off()
-
-# turns on the specified pin
-def turn_on_pin(pin_number):
-    from machine import Pin
-    pin = Pin(pin_number, Pin.OUT)
-    pin.on()
-
-# turns off pumps
-def turn_off_pumps():
-    turn_off_pin(FIRST_PUMP_PIN)
-    turn_off_pin(SECOND_PUMP_PIN)
-
-# turns on pumps
-def turn_on_pumps():
-    turn_on_pin(FIRST_PUMP_PIN)
-    turn_on_pin(SECOND_PUMP_PIN)
-
 # returns true if a switch on the specified pin is on
 def is_switch_on(pin_number):
     from machine import Pin
@@ -242,12 +220,8 @@ def is_switch_on(pin_number):
     return True if pin.value() == 1 else False
 
 # returns true if config mode enabled
-def is_config_mode():
-    return is_switch_on(CONFIG_MODE_SWITCH_PIN)
-
-# returns true if the pumps switch is on
-def is_pumps_switch_on():
-    return is_switch_on(PUMP_SWITCH_PIN)
+def is_config_mode(config):
+    return is_switch_on(config['config_mode_switch_pin'])
 
 
 # entry point
@@ -262,7 +236,7 @@ pumps = Pumps(config['first_pump_pin'], config['second_pump_pin'], config['pump_
 weather = Weather(config['dht22_pin'], config['measurement_interval'])
 
 # check if we're in configuration mode
-if is_config_mode():
+if is_config_mode(config):
     print('enabled configuration mode')
     start_access_point()
     start_local_server()
