@@ -19,12 +19,8 @@ def start_access_point(ssid, password):
 # tries to connect to wi-fi
 # returns true in case of successful connection
 def connect_to_wifi(ssid, password):
-    if not config:
-        print('config is empty')
-        return
-
-    if not config['ssid'] or not config['password']:
-        print('could not find ssid/password in config file')
+    if not ssid or not password:
+        print('ssid/password are not set')
         return False
 
     # try to connect

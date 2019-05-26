@@ -87,6 +87,7 @@ from pump import Pumps
 from config import Config
 from machine import Pin
 import util
+import time
 
 config = Config('main.conf')
 pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
@@ -112,4 +113,4 @@ util.connect_to_wifi(config.get('ssid'), config.get('password'))
 while True:
     weather.check()
     pumps.check()
-    time.sleep(5) # in seconds
+    time.sleep(1) # in seconds

@@ -21,6 +21,6 @@ class Weather:
     def check(self):
         current_time = time.ticks_ms()
         deadline = time.ticks_add(self.last_measurement, self.interval)
-        if time.ticks_diff(deadline, current_time) > 0:
+        if time.ticks_diff(deadline, current_time) <= 0:
             self.measure()
             self.last_measurement = current_time
