@@ -53,6 +53,9 @@ def is_switch_on(pin_number):
     return True if pin.value() == 1 else False
 
 def string_to_millis(string):
+    print("debug: string_to_millis: " + string)
+    if not string:
+        return 0
     value = 0
     for item in string.split(' '):
         item = item.strip()

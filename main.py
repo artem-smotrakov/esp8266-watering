@@ -37,6 +37,7 @@ FORM_TEMPLATE = """\
         <div style="width: 100%;">
             <form method="post">
                 <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text" value="%watering_interval%"/></p>
+                <p style="width: 100%;">Duration:&nbsp;<input name="watering_duration" type="text" value="%watering_duration%"/></p>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
         </div>
@@ -56,6 +57,7 @@ def get_form(config):
     form = FORM_TEMPLATE
     form = form.replace('%ssid%', str(config.get('ssid')))
     form = form.replace('%watering_interval%', str(config.get('watering_interval')))
+    form = form.replace('%watering_duration%', str(config.get('watering_duration')))
     form = form.replace('%measurement_interval%', str(config.get('measurement_interval')))
     return HTTP_RESPONSE % (len(form), form)
 
@@ -78,6 +80,8 @@ class ConnectionHandler:
                     config.set('password', value)
                 if name == 'watering_interval':
                     config.set('watering_interval', value)
+                if name == 'watering_duration':
+                    config.set('watering_duration', value)
                 if name == 'measurement_interval':
                     config.set('measurement_interval', value)
 
@@ -100,7 +104,9 @@ from config import Config
 import util
 
 config = Config('main.conf')
-pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'), config.get('pump_switch_pin'))
+pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
+              config.get('pump_switch_pin'),
+              config.get('watering_interval'), config.get('watering_duration'))
 weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
 
 # check if we're in configuration mode
