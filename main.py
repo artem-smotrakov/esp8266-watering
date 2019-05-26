@@ -21,10 +21,11 @@ FORM = b"""\
 <html>
     <head>
         <title>Watering system configuration</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <h2>Watering system configuration</h2>
-        <h3>Wi-Fi settings</h3>
+        <h2 style="font-size:10vw">Watering system configuration</h2>
+        <h3 style="font-size:5vw">Wi-Fi settings</h3>
         <div>
             <form method="post">
                 <p>SSID:&nbsp;<input name="ssid" type="text"/></p>
