@@ -18,7 +18,7 @@ class Config:
 
     def store(self):
         f = open(self.filename, 'w')
-        f.write(ujson.dump(self.values))
+        f.write(ujson.dumps(self.values))
         f.close()
 
     def load(self):

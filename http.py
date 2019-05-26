@@ -61,4 +61,4 @@ class HttpServer:
 
                 client_s.close()
             except Exception as e:
-                print("exception: ", e)
+                print(e)

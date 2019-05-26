@@ -11,7 +11,7 @@ Content-Length: %d
 """
 
 HTTP_REDIRECT = b"""\
-HTTP/1.0 200 OK
+HTTP/1.0 301 Moved Permanently
 Location: /
 
 """
@@ -26,11 +26,25 @@ FORM = b"""\
     <body>
         <h2 style="font-size:10vw">Watering system configuration</h2>
         <h3 style="font-size:5vw">Wi-Fi settings</h3>
-        <div>
+        <div style="width: 100%;">
             <form method="post">
-                <p>SSID:&nbsp;<input name="ssid" type="text"/></p>
-                <p>Password:&nbsp;<input name="pass" type="password"/></p>
-                <p><input type="submit" value="Update"></p>
+                <p style="width: 100%;">SSID:&nbsp;<input name="ssid" type="text"/></p>
+                <p style="width: 100%;">Password:&nbsp;<input name="pass" type="password"/></p>
+                <p style="width: 100%;"><input type="submit" value="Update"></p>
+            </form>
+        </div>
+        <h3 style="font-size:5vw">Watering settings</h3>
+        <div style="width: 100%;">
+            <form method="post">
+                <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text"/></p>
+                <p style="width: 100%;"><input type="submit" value="Update"></p>
+            </form>
+        </div>
+        <h3 style="font-size:5vw">Measurement settings</h3>
+        <div style="width: 100%;">
+            <form method="post">
+                <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text"/></p>
+                <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
         </div>
     </body>
@@ -58,6 +72,10 @@ class ConnectionHandler:
                     config.set('ssid', value)
                 if name == 'pass':
                     config.set('password', value)
+                if name == 'watering_interval':
+                    print('watering_interval: ' + value)
+                if name == 'measurement_interval':
+                    print('measurement_interval: ' + value)
 
             config.store()
             client_s.write(HTTP_REDIRECT)
