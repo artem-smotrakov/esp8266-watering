@@ -1,16 +1,3 @@
-try:
-    import usocket as socket
-except:
-    import socket
-import ussl as ssl
-
-# even if TLS is used here, MicroPython for ESP8260 doesn't support
-# certificate validation
-# we're relatively safe if an attacker can only eavesdrop
-# because all data should be encrypted
-# but if the attacker can modify the trafic, then we're in a trouble
-# since the attacker can implement a man-in-the-middle attack
-
 HTTP_RESPONSE = b"""\
 HTTP/1.0 200 OK
 Content-Length: %d
