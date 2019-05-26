@@ -80,16 +80,12 @@ class ConnectionHandler:
             # otherwise, print out html form
             client_s.write(get_form(config))
 
-# returns true if config mode enabled
-def is_config_mode(config):
-    import util
-    return util.is_switch_on(config.get('config_mode_switch_pin'))
-
 
 # entry point
 from weather import Weather
 from pump import Pumps
 from config import Config
+from machine import Pin
 import util
 
 config = Config('main.conf')
@@ -98,8 +94,11 @@ pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
               config.get('watering_interval'), config.get('watering_duration'))
 weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
 
+config_mode_switch = Pin(config.get('config_mode_switch_pin'), Pin.IN)
+config_mode_switch.irq(lambda pin: util.reboot())
+
 # check if we're in configuration mode
-if is_config_mode(config):
+if config_mode_switch.value() == 1:
     from http import HttpServer
     print('enabled configuration mode')
     access_point = util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)

@@ -47,11 +47,6 @@ def connect_to_wifi(ssid, password):
         print('connection failed')
         return False
 
-# returns true if a switch on the specified pin is on
-def is_switch_on(pin_number):
-    pin = Pin(pin_number, Pin.IN)
-    return True if pin.value() == 1 else False
-
 def string_to_millis(string):
     if not string:
         return 0
