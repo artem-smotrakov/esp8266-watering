@@ -17,7 +17,7 @@ Location: /
 """
 
 # HTML form for settings
-FORM = b"""\
+FORM_TEMPLATE = """\
 <html>
     <head>
         <title>Watering system configuration</title>
@@ -28,7 +28,7 @@ FORM = b"""\
         <h3 style="font-size:5vw">Wi-Fi settings</h3>
         <div style="width: 100%;">
             <form method="post">
-                <p style="width: 100%;">SSID:&nbsp;<input name="ssid" type="text"/></p>
+                <p style="width: 100%;">SSID:&nbsp;<input name="ssid" type="text" value="%ssid%"/></p>
                 <p style="width: 100%;">Password:&nbsp;<input name="pass" type="password"/></p>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
@@ -36,14 +36,14 @@ FORM = b"""\
         <h3 style="font-size:5vw">Watering settings</h3>
         <div style="width: 100%;">
             <form method="post">
-                <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text"/></p>
+                <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text" value="%watering_interval%"/></p>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
         </div>
         <h3 style="font-size:5vw">Measurement settings</h3>
         <div style="width: 100%;">
             <form method="post">
-                <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text"/></p>
+                <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text" value="%measurement_interval%"/></p>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
         </div>
@@ -52,8 +52,12 @@ FORM = b"""\
 """
 
 # returns an HTTP response with a form
-def get_form():
-    return HTTP_RESPONSE % (len(FORM), FORM)
+def get_form(config):
+    form = FORM_TEMPLATE
+    form = form.replace('%ssid%', str(config.get('ssid')))
+    form = form.replace('%watering_interval%', str(config.get('watering_interval')))
+    form = form.replace('%measurement_interval%', str(config.get('measurement_interval')))
+    return HTTP_RESPONSE % (len(form), form)
 
 class ConnectionHandler:
 
@@ -73,15 +77,15 @@ class ConnectionHandler:
                 if name == 'pass':
                     config.set('password', value)
                 if name == 'watering_interval':
-                    print('watering_interval: ' + value)
+                    config.set('watering_interval', value)
                 if name == 'measurement_interval':
-                    print('measurement_interval: ' + value)
+                    config.set('measurement_interval', value)
 
             config.store()
             client_s.write(HTTP_REDIRECT)
         else:
             # otherwise, print out html form
-            client_s.write(get_form())
+            client_s.write(get_form(config))
 
 # returns true if config mode enabled
 def is_config_mode(config):
