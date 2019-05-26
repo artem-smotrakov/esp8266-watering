@@ -60,8 +60,6 @@ DHT22_PIN = 14
 FIRST_PUMP_PIN = 12
 SECOND_PUMP_PIN = 13
 
-# timings in seconds
-MESUREMENT_INTERVAL = 300 # TODO: read this from a config file
 DELAY = 5
 REBOOT_DELAY = 5
 
@@ -179,6 +177,10 @@ def read_config():
     import ujson
     f = open(CONFIG)
     values = ujson.load(f.read())
+    if not values['measurement_interval']:
+        values['measurement_interval'] = 300 * 1000
+    if not values['dht22_pin']:
+        values['dht22_pin'] = DHT22_PIN
     f.close()
 
 # start wifi access point
@@ -256,17 +258,6 @@ def is_config_mode():
 def is_pumps_switch_on():
     return is_switch_on(PUMP_SWITCH_PIN)
 
-# mesures temperature and humidity with DHT22 sensor
-def mesure_temperature_and_humidity():
-    import dht
-    import machine
-    d = dht.DHT22(machine.Pin(DHT22_PIN))
-    d.measure()
-    t = d.temperature()
-    h = d.humidity()
-    print('temperature = %.2f' % t)
-    print('humidity    = %.2f' % h)
-
 
 # entry point
 
@@ -288,6 +279,8 @@ else:
     is_pumps_on = False
 
     # main loop
+    from weather import Weather
+    weather = Weather(config.dht22_pin, config.measurement_interval)
     while True:
         status = is_pumps_switch_on()
         if is_pumps_on != status:
@@ -297,8 +290,6 @@ else:
             else:
                 turn_off_pumps()
 
-        current_time = time.time()
-        if current_time - last_mesurement_time > MESUREMENT_INTERVAL:
-            mesure_temperature_and_humidity()
-            last_mesurement_time = current_time
+        weather.check()
+
         time.sleep(DELAY)
