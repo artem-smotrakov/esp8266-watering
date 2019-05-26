@@ -46,8 +46,6 @@ FORM = b"""\
 """
 
 CONFIG = 'main.conf'
-SERVER_PORT = 443
-INDENT = '    '
 
 # make sure that the password is not too short
 # otherwise, an OSError occurs while setting up a wi-fi access point
@@ -69,92 +67,22 @@ def reboot():
     time.sleep(REBOOT_DELAY)
     machine.reset()
 
-# start a web server which asks for wifi ssid/password, and other settings
-# it stores settings to a config file
-# it's a very simple web server
-# it assumes that it's running in safe environment for a short period of time,
-# so it doesn't check much input data
-#
-# based on https://github.com/micropython/micropython/blob/master/examples/network/http_server_ssl.py
-def start_local_server(use_stream = True):
-    s = socket.socket()
+def connection_handler(client_s, status_line, headers, data):
+    if status_line.startswith('POST') and data:
+        # process data from the web forms
+        values = read_config()
+        params = data.split('&')
+        for param in params:
+            if param.startswith('ssid='):
+                config['ssid'] = param.split('=')[1]
+            if param.startswith('pass='):
+                config['password'] = param.split('=')[1]
 
-    # binding to all interfaces - server will be accessible to other hosts!
-    ai = socket.getaddrinfo('0.0.0.0', SERVER_PORT)
-    print('bind address info: ', ai)
-    addr = ai[0][-1]
-
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(addr)
-    s.listen(5)
-    print('server started on https://192.168.4.1:%d/' % SERVER_PORT)
-
-    # main serer loop
-    while True:
-        print('waiting for connection ...')
-        res = s.accept()
-
-        client_s = res[0]
-        client_addr = res[1]
-
-        print("client address: ", client_addr)
-        client_s = ssl.wrap_socket(client_s, server_side=True)
-        print(client_s)
-
-        print("client request:")
-        if use_stream:
-            # both CPython and MicroPython SSLSocket objects support read() and
-            # write() methods
-            #
-            # browsers are prone to terminate SSL connection abruptly if they
-            # see unknown certificate, etc.
-            # we must continue in such case -
-            # next request they issue will likely be more well-behaving and
-            # will succeed
-            try:
-                req = client_s.readline().decode('utf-8').strip()
-                print(INDENT + req)
-
-                # content length
-                length = 0
-
-                # read headers, and look for Content-Length header
-                while True:
-                    h = client_s.readline()
-                    if h == b"" or h == b"\r\n":
-                        break
-                    header = h.decode('utf-8').strip().lower()
-                    if header.startswith('content-length'):
-                        length = int(header.split(':')[1])
-                    print(INDENT + header)
-
-                if req.startswith('POST') and length > 0:
-                    # process data from the web form
-                    data = client_s.read(length).decode('utf-8')
-                    if data:
-                        values = read_config()
-                        params = data.split('&')
-                        for param in params:
-                            if param.startswith('ssid='):
-                                config['ssid'] = param.split('=')[1]
-                            if param.startswith('pass='):
-                                config['password'] = param.split('=')[1]
-
-                        write_config(values)
-                        client_s.write(HTTP_REDIRECT)
-                else:
-                    # otherwise, print out html form
-                    client_s.write(get_form())
-
-                client_s.close()
-            except Exception as e:
-                print("exception: ", e)
-        else:
-            print(client_s.recv(4096))
-            client_s.send(get_form())
-
-        # close the connection
-        client_s.close()
+        write_config(values)
+        client_s.write(HTTP_REDIRECT)
+    else:
+        # otherwise, print out html form
+        client_s.write(get_form())
 
 def write_config(values):
     import ujson
@@ -225,7 +153,6 @@ def is_config_mode(config):
 
 
 # entry point
-
 from weather import Weather
 from pump import Pumps
 
@@ -237,13 +164,15 @@ weather = Weather(config['dht22_pin'], config['measurement_interval'])
 
 # check if we're in configuration mode
 if is_config_mode(config):
+    import HttpsServer from https
     print('enabled configuration mode')
     start_access_point()
-    start_local_server()
+    HttpServer(connection_handler).start()
     reboot()
-else:
-    connect_to_wifi(config)
-    while True:
-        weather.check()
-        pumps.check()
-        time.sleep(DELAY)
+
+# main loop
+connect_to_wifi(config)
+while True:
+    weather.check()
+    pumps.check()
+    time.sleep(DELAY)
