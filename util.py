@@ -1,14 +1,16 @@
+from machine import Pin
+import time
+import machine
+import network
+
 # reboot the board after some delay
 def reboot(delay = 5):
-    import time
-    import machine
     print('rebooting ...')
     time.sleep(delay)
     machine.reset()
 
 # start wifi access point
 def start_access_point(ssid, password):
-    import network
     ap = network.WLAN(network.AP_IF)
     ap.config(essid=ssid, password=password, authmode=network.AUTH_WPA_WPA2_PSK)
 
@@ -24,8 +26,6 @@ def connect_to_wifi(ssid, password):
         return False
 
     # try to connect
-    import network
-    import time
     print('connecting to network: %s' % ssid)
     nic = network.WLAN(network.STA_IF)
     nic.active(True)
@@ -47,6 +47,5 @@ def connect_to_wifi(ssid, password):
 
 # returns true if a switch on the specified pin is on
 def is_switch_on(pin_number):
-    from machine import Pin
     pin = Pin(pin_number, Pin.IN)
     return True if pin.value() == 1 else False
