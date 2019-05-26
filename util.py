@@ -11,8 +11,10 @@ def reboot(delay = 5):
 
 # start wifi access point
 def start_access_point(ssid, password):
-    ap = network.WLAN(network.AP_IF)
-    ap.config(essid=ssid, password=password, authmode=network.AUTH_WPA_WPA2_PSK)
+    access_point = network.WLAN(network.AP_IF)
+    access_point.active(True)
+    access_point.config(essid=ssid, password=password, authmode=network.AUTH_WPA_WPA2_PSK)
+    return access_point
 
 # tries to connect to wi-fi
 # returns true in case of successful connection

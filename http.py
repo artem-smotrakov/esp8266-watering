@@ -2,20 +2,13 @@ try:
     import usocket as socket
 except:
     import socket
-import ussl as ssl
 
-# even if TLS is used here, MicroPython for ESP8260 doesn't support
-# certificate validation
-# we're relatively safe if an attacker can only eavesdrop
-# because all data should be encrypted
-# but if the attacker can modify the trafic, then we're in a trouble
-# since the attacker can implement a man-in-the-middle attack
+class HttpServer:
 
-class HttpsServer:
-
-    def __init__(self, handler, port = 433):
-        self.handler = handler
+    def __init__(self, ip, port, handler):
+        self.ip = ip
         self.port = port
+        self.handler = handler
 
     # start a web server which asks for wifi ssid/password, and other settings
     # it stores settings to a config file
@@ -28,26 +21,20 @@ class HttpsServer:
         s = socket.socket()
 
         # binding to all interfaces - server will be accessible to other hosts!
-        ai = socket.getaddrinfo('0.0.0.0', self.port)
-        print('bind address info: ', ai)
+        ai = socket.getaddrinfo(self.ip, self.port)
         addr = ai[0][-1]
 
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(addr)
         s.listen(5)
-        print('server started on port %d' % self.port)
+        print('server started on %s:%s' % addr)
 
         # main serer loop
         while True:
             print('waiting for connection ...')
             res = s.accept()
-
             client_s = res[0]
-            client_addr = res[1]
-
-            print("client address: ", client_addr)
-            client_s = ssl.wrap_socket(client_s, server_side=True)
-            print(client_s)
+            print('accepted')
 
             try:
                 status_line = client_s.readline().decode('utf-8').strip()
@@ -65,7 +52,7 @@ class HttpsServer:
                     name = parts[0].strip()
                     value = parts[1].strip()
                     headers[name] = value
-                    if header_name == 'content-length':
+                    if name == 'content-length':
                         length = int(value)
 
                 data = client_s.read(length).decode('utf-8')

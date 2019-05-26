@@ -14,7 +14,6 @@ HTTP_REDIRECT = b"""\
 HTTP/1.0 200 OK
 Location: /
 
-
 """
 
 # HTML form for settings
@@ -83,11 +82,12 @@ weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
 
 # check if we're in configuration mode
 if is_config_mode(config):
-    from https import HttpsServer
+    from http import HttpServer
     print('enabled configuration mode')
-    util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
+    access_point = util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
     handler = ConnectionHandler(config)
-    HttpsServer(handler).start()
+    ip = access_point.ifconfig()[0]
+    HttpServer(ip, 80, handler).start()
     util.reboot()
 
 # main loop
