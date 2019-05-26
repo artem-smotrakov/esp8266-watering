@@ -29,7 +29,7 @@ FORM_TEMPLATE = """\
         <div style="width: 100%;">
             <form method="post">
                 <p style="width: 100%;">SSID:&nbsp;<input name="ssid" type="text" value="%ssid%"/></p>
-                <p style="width: 100%;">Password:&nbsp;<input name="pass" type="password"/></p>
+                <p style="width: 100%;">Password:&nbsp;<input name="password" type="password"/></p>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </form>
         </div>
@@ -72,18 +72,9 @@ class ConnectionHandler:
             params = data.split('&')
             for param in params:
                 parts = param.split('=')
-                name = parts[0]
-                value = parts[1]
-                if name == 'ssid':
-                    config.set('ssid', value)
-                if name == 'pass':
-                    config.set('password', value)
-                if name == 'watering_interval':
-                    config.set('watering_interval', value)
-                if name == 'watering_duration':
-                    config.set('watering_duration', value)
-                if name == 'measurement_interval':
-                    config.set('measurement_interval', value)
+                name = parts[0].strip()
+                value = parts[1].strip()
+                config.set(name, value)
 
             config.store()
             client_s.write(HTTP_REDIRECT)
