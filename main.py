@@ -177,11 +177,15 @@ def read_config():
     import ujson
     f = open(CONFIG)
     values = ujson.load(f.read())
-    if not values['measurement_interval']:
-        values['measurement_interval'] = 300 * 1000
-    if not values['dht22_pin']:
-        values['dht22_pin'] = DHT22_PIN
     f.close()
+    config = {}
+    config['measurement_interval'] = 300 * 1000
+    config['dht22_pin'] = DHT22_PIN
+    config['first_pump_pin'] = FIRST_PUMP_PIN
+    config['second_pump_pin'] = SECOND_PUMP_PIN
+    config['pump_switch_pin'] = PUMP_SWITCH_PIN
+    config.update(values)
+    return config
 
 # start wifi access point
 def start_access_point():
@@ -261,9 +265,13 @@ def is_pumps_switch_on():
 
 # entry point
 
-turn_off_pumps()
+from weather import Weather
+from pumps import Pumps
 
 config = read_config()
+
+pumps = Pumps(config.first_pump_pin, config.second_pump_pin, config.pump_switch_pin)
+weather = Weather(config.dht22_pin, config.measurement_interval)
 
 # check if we're in configuration mode
 if is_config_mode():
@@ -273,23 +281,7 @@ if is_config_mode():
     reboot()
 else:
     connect_to_wifi(config)
-
-    import time
-    last_mesurement_time = time.time()
-    is_pumps_on = False
-
-    # main loop
-    from weather import Weather
-    weather = Weather(config.dht22_pin, config.measurement_interval)
     while True:
-        status = is_pumps_switch_on()
-        if is_pumps_on != status:
-            is_pumps_on = status
-            if is_pumps_on:
-                turn_on_pumps()
-            else:
-                turn_off_pumps()
-
         weather.check()
-
+        pumps.check()
         time.sleep(DELAY)
