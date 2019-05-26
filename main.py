@@ -170,20 +170,20 @@ def write_config(values):
 
 # read config from a file
 def read_config():
-    import os
-    if not CONFIG in os.listdir():
-        print('cannot find ' + CONFIG)
-        return {}
-    import ujson
-    f = open(CONFIG)
-    values = ujson.load(f.read())
-    f.close()
     config = {}
     config['measurement_interval'] = 300 * 1000
     config['dht22_pin'] = DHT22_PIN
     config['first_pump_pin'] = FIRST_PUMP_PIN
     config['second_pump_pin'] = SECOND_PUMP_PIN
     config['pump_switch_pin'] = PUMP_SWITCH_PIN
+    import os
+    if not CONFIG in os.listdir():
+        print('cannot find ' + CONFIG)
+        return config
+    import ujson
+    f = open(CONFIG)
+    values = ujson.load(f.read())
+    f.close()
     config.update(values)
     return config
 
@@ -210,7 +210,7 @@ def connect_to_wifi(config):
     print('connecting to network: %s' % ssid)
     nic = network.WLAN(network.STA_IF)
     nic.active(True)
-    nic.connect(config.ssid, config.password)
+    nic.connect(config['ssid'], config['password'])
 
     # wait some time
     attempt = 0
@@ -266,12 +266,13 @@ def is_pumps_switch_on():
 # entry point
 
 from weather import Weather
-from pumps import Pumps
+from pump import Pumps
 
 config = read_config()
+print('configuration: %s' % config)
 
-pumps = Pumps(config.first_pump_pin, config.second_pump_pin, config.pump_switch_pin)
-weather = Weather(config.dht22_pin, config.measurement_interval)
+pumps = Pumps(config['first_pump_pin'], config['second_pump_pin'], config['pump_switch_pin'])
+weather = Weather(config['dht22_pin'], config['measurement_interval'])
 
 # check if we're in configuration mode
 if is_config_mode():
