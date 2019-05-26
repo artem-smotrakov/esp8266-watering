@@ -25,29 +25,25 @@ FORM_TEMPLATE = """\
     </head>
     <body>
         <h2 style="font-size:10vw">Watering system configuration</h2>
-        <h3 style="font-size:5vw">Wi-Fi settings</h3>
-        <div style="width: 100%;">
-            <form method="post">
+        <form method="post">
+            <h3 style="font-size:5vw">Wi-Fi settings</h3>
+            <div style="width: 100%;">
                 <p style="width: 100%;">SSID:&nbsp;<input name="ssid" type="text" value="%ssid%"/></p>
                 <p style="width: 100%;">Password:&nbsp;<input name="password" type="password"/></p>
-                <p style="width: 100%;"><input type="submit" value="Update"></p>
-            </form>
-        </div>
-        <h3 style="font-size:5vw">Watering settings</h3>
-        <div style="width: 100%;">
-            <form method="post">
+            </div>
+            <h3 style="font-size:5vw">Watering settings</h3>
+            <div style="width: 100%;">
                 <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text" value="%watering_interval%"/></p>
                 <p style="width: 100%;">Duration:&nbsp;<input name="watering_duration" type="text" value="%watering_duration%"/></p>
-                <p style="width: 100%;"><input type="submit" value="Update"></p>
-            </form>
-        </div>
-        <h3 style="font-size:5vw">Measurement settings</h3>
-        <div style="width: 100%;">
-            <form method="post">
+            </div>
+            <h3 style="font-size:5vw">Measurement settings</h3>
+            <div style="width: 100%;">
                 <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text" value="%measurement_interval%"/></p>
+            </div>
+            <div>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
-            </form>
-        </div>
+            </div>
+        </form>
     </body>
 </html>
 """
@@ -74,6 +70,8 @@ class ConnectionHandler:
                 parts = param.split('=')
                 name = parts[0].strip()
                 value = parts[1].strip()
+                if name == 'password' and not value:
+                    continue
                 config.set(name, value)
 
             config.store()
