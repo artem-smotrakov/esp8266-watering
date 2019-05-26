@@ -189,12 +189,12 @@ def start_access_point():
 
 # read ssid/password from a file, and try to connect
 # returns true in case of successful connection
-def connect_to_wifi():
-    config = read_config()
+def connect_to_wifi(config):
     if not config:
         print('config is empty')
         return
-    if not config.ssid or not config.password:
+
+    if not config['ssid'] or not config['password']:
         print('could not find ssid/password in config file')
         return False
 
@@ -272,6 +272,8 @@ def mesure_temperature_and_humidity():
 
 turn_off_pumps()
 
+config = read_config()
+
 # check if we're in configuration mode
 if is_config_mode():
     print('enabled configuration mode')
@@ -279,11 +281,11 @@ if is_config_mode():
     start_local_server()
     reboot()
 else:
+    connect_to_wifi(config)
+
     import time
     last_mesurement_time = time.time()
     is_pumps_on = False
-
-    connect_to_wifi()
 
     # main loop
     while True:
