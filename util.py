@@ -51,3 +51,21 @@ def connect_to_wifi(ssid, password):
 def is_switch_on(pin_number):
     pin = Pin(pin_number, Pin.IN)
     return True if pin.value() == 1 else False
+
+def string_to_millis(string):
+    value = 0
+    for item in parts = string.split(' '):
+        item = item.strip()
+        l = len(item)
+        n = int(item[:l - 1])
+        m = item[l - 1]
+        if m == 'd':
+            value = value + n * 24 * 60 * 60 * 1000
+        if m == 'h':
+            value = value + n * 60 * 60 * 1000
+        if m == 'm':
+            value = value + n * 60 * 1000
+        if m == 's':
+            value = value + n * 1000
+
+    return value

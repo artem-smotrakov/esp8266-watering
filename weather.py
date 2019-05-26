@@ -1,13 +1,14 @@
 import time
 import dht
 import machine
+import util
 
 class Weather:
 
     def __init__(self, pin, interval):
         self.last_measurement = time.ticks_ms()
         self.dht22 = dht.DHT22(machine.Pin(pin))
-        self.interval = interval
+        self.interval = util.string_to_millis(interval)
 
     # mesures temperature and humidity
     def measure(self):
