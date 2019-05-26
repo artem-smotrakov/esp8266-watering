@@ -54,7 +54,7 @@ def is_switch_on(pin_number):
 
 def string_to_millis(string):
     value = 0
-    for item in parts = string.split(' '):
+    for item in string.split(' '):
         item = item.strip()
         l = len(item)
         n = int(item[:l - 1])
