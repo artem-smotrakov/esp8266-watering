@@ -54,12 +54,6 @@ INDENT = '    '
 ACCESS_POINT_SSID = 'esp8266-watering'
 ACCESS_POINT_PASSWORD = 'helloesp8266'
 
-CONFIG_MODE_SWITCH_PIN = 5
-PUMP_SWITCH_PIN = 4
-DHT22_PIN = 14
-FIRST_PUMP_PIN = 12
-SECOND_PUMP_PIN = 13
-
 DELAY = 5
 REBOOT_DELAY = 5
 
@@ -170,21 +164,14 @@ def write_config(values):
 
 # read config from a file
 def read_config():
-    config = {}
-    config['measurement_interval'] = 300 * 1000
-    config['dht22_pin'] = DHT22_PIN
-    config['first_pump_pin'] = FIRST_PUMP_PIN
-    config['second_pump_pin'] = SECOND_PUMP_PIN
-    config['pump_switch_pin'] = PUMP_SWITCH_PIN
     import os
     if not CONFIG in os.listdir():
         print('cannot find ' + CONFIG)
-        return config
+        return {}
     import ujson
     f = open(CONFIG)
-    values = ujson.load(f.read())
+    config = ujson.load(f.read())
     f.close()
-    config.update(values)
     return config
 
 # start wifi access point
