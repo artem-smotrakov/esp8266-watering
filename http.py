@@ -3,24 +3,20 @@ try:
 except:
     import socket
 
+# this is a simple HTTP server
 class HttpServer:
 
+    # initilizes an HTTP server with IP address, port, and a handler
+    # which handles incoming HTTP requests
     def __init__(self, ip, port, handler):
         self.ip = ip
         self.port = port
         self.handler = handler
 
-    # start a web server which asks for wifi ssid/password, and other settings
-    # it stores settings to a config file
-    # it's a very simple web server
-    # it assumes that it's running in safe environment for a short period of time,
-    # so it doesn't check much input data
-    #
-    # based on https://github.com/micropython/micropython/blob/master/examples/network/http_server_ssl.py
+    # starts the server on the specified IP adress and port
     def start(self):
         s = socket.socket()
 
-        # binding to all interfaces - server will be accessible to other hosts!
         ai = socket.getaddrinfo(self.ip, self.port)
         addr = ai[0][-1]
 
@@ -29,7 +25,7 @@ class HttpServer:
         s.listen(5)
         print('server started on %s:%s' % addr)
 
-        # main serer loop
+        # main server loop
         while True:
             print('waiting for connection ...')
             res = s.accept()
@@ -37,12 +33,14 @@ class HttpServer:
             print('accepted')
 
             try:
+                # read the status line
                 status_line = client_s.readline().decode('utf-8').strip()
 
                 # content length
                 length = 0
 
-                # read headers, and look for Content-Length header
+                # read all headers, and look for Content-Length header
+                # in order to read data from the request
                 headers = {}
                 while True:
                     h = client_s.readline()
@@ -55,8 +53,10 @@ class HttpServer:
                     if name == 'content-length':
                         length = int(value)
 
+                # read data from the request
                 data = client_s.read(length).decode('utf-8')
 
+                # let the handler to process the request
                 self.handler.handle(client_s, status_line, headers, data)
 
                 client_s.close()
