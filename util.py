@@ -3,39 +3,44 @@ import time
 import machine
 import network
 
-# reboot the board after some delay
+# reboot the board after some delay (in seconds)
 def reboot(delay = 5):
     print('rebooting ...')
     time.sleep(delay)
     machine.reset()
 
-# start wifi access point
+# start a wi-fi access point
 def start_access_point(ssid, password):
     access_point = network.WLAN(network.AP_IF)
     access_point.active(True)
     access_point.config(essid=ssid, password=password, authmode=network.AUTH_WPA_WPA2_PSK)
     return access_point
 
-# tries to connect to wi-fi
-# returns true in case of successful connection
+# tries to connect to a wi-fi network
+# returns true in case of successful connection, and false otherwise
 def connect_to_wifi(ssid, password):
+
+    # check if ssid and password are specified
     if not ssid or not password:
         print('ssid/password are not set')
         return False
 
-    # try to connect
+    # connect to the specified wi-fi network
     print('connecting to network: %s' % ssid)
     nic = network.WLAN(network.STA_IF)
     nic.active(True)
     nic.connect(ssid, password)
 
-    # wait some time
+    # allow some time to establish the connection
+    # since the connect() method may return
+    # even before the connection is established
     attempt = 0
     while attempt < 11 and not nic.isconnected():
         print('connecting ...')
         time.sleep(1.0)
         attempt = attempt + 1
 
+    # check if the connection was successfully established
     if nic.isconnected():
         print('connected')
         return True
@@ -43,6 +48,19 @@ def connect_to_wifi(ssid, password):
         print('connection failed')
         return False
 
+# convert time specified in a string to milliseconds
+# the format is `Xd Yh Zm Ws` where
+#     X is a number of days
+#     Y is a number of hours
+#     Z is a number of minutes
+#     W is a number of seconds
+#     all Xd, Yh, Zm and Ws are optional
+#
+# examples:
+#     an empty string is 0 milliseconds
+#     `5m` is equal to 5 * 60 * 1000 = 300000 milliseconds
+#     `2h 3s` is equal to 2 * 60 * 60 * 1000 + 3 * 1000 =
+#                         = 7200000 + 3000 = 7203000 milliseconds
 def string_to_millis(string):
     if not string:
         return 0
