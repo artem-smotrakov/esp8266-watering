@@ -3,8 +3,11 @@ import dht
 import machine
 import util
 
+# the class controls a DHT22 sensor which measures temperature and humidity
 class Weather:
 
+    # initilizes an instance with a pin where DHT22 is connected to
+    # and an internal which specifies the schedule for measurements
     def __init__(self, pin, interval):
         self.last_measurement = time.ticks_ms()
         self.dht22 = dht.DHT22(machine.Pin(pin))
@@ -18,6 +21,7 @@ class Weather:
         print('temperature = %.2f' % t)
         print('humidity    = %.2f' % h)
 
+    # checks if it's time to measure temperature and humidity
     def check(self):
         current_time = time.ticks_ms()
         deadline = time.ticks_add(self.last_measurement, self.interval)
