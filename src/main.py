@@ -99,6 +99,16 @@ class ConnectionHandler:
         else:
             client_s.write(get_form(config))
 
+
+class WeatherHandler:
+
+    def __init__(self):
+        pass
+
+    def handle(self, t, h):
+        print('temperature = %.2f' % t)
+        print('humidity    = %.2f' % h)
+
 # entry point
 from weather import Weather
 from pump import Pumps
@@ -116,7 +126,9 @@ pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
               config.get('watering_interval'), config.get('watering_duration'))
 
 # initialize the DHT22 sensor which measures temperature and humidity
-weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
+weather = Weather(config.get('dht22_pin'),
+                  config.get('measurement_interval'),
+                  WeatherHandler())
 
 # initilize the switch which enables the configuration mode
 # if the switch changes its state, then the board is going to reboot immediately
