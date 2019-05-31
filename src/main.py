@@ -99,7 +99,6 @@ class ConnectionHandler:
         else:
             client_s.write(get_form(config))
 
-
 # entry point
 from weather import Weather
 from pump import Pumps
@@ -109,7 +108,7 @@ import util
 import time
 
 # load a config from a file
-config = Config('main.conf')
+config = Config('main.conf', 'key.json')
 
 # initialize the pumps and the switch which turns them on and off
 pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
