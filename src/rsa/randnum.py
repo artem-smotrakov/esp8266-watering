@@ -24,7 +24,6 @@ from rsa import common, transform
 from rsa._compat import byte
 
 
-# keep it
 def read_random_bits(nbits):
     """Reads 'nbits' random bits.
 
@@ -46,7 +45,6 @@ def read_random_bits(nbits):
     return randomdata
 
 
-# keep it
 def read_random_int(nbits):
     """Reads a random integer of approximately nbits bits.
     """
@@ -61,7 +59,6 @@ def read_random_int(nbits):
     return value
 
 
-# keep it
 def randint(maxvalue):
     """Returns a random integer x with 1 <= x <= maxvalue
 

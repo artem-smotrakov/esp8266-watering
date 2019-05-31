@@ -30,7 +30,6 @@ def assert_int(var, name):
     raise TypeError('%s should be an integer, not %s' % (name, var.__class__))
 
 
-# keep it
 def encrypt_int(message, ekey, n):
     """Encrypts a message using encryption key 'ekey', working modulo n"""
 

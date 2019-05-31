@@ -40,7 +40,6 @@ range = range
 zip = zip
 
 
-# keep it
 def is_integer(obj):
     """
     Determines whether the given value is an integer.
@@ -53,7 +52,6 @@ def is_integer(obj):
     return isinstance(obj, integer_types)
 
 
-# keep it
 def byte(num):
     """
     Converts a number between 0 and 255 (both inclusive) to a base-256 (byte)

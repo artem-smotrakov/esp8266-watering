@@ -22,11 +22,9 @@ From bytes to a number, number to bytes, etc.
 import binascii
 from struct import pack
 
-from rsa._compat import byte, is_integer
-from rsa import common, machine_size
+from rsa import machine_size
 
 
-# keep it
 def bytes2int(raw_bytes):
     r"""Converts a list of bytes or an 8-bit string to an integer.
 
@@ -42,7 +40,6 @@ def bytes2int(raw_bytes):
     return int(binascii.hexlify(raw_bytes), 16)
 
 
-# keep it
 def bytes_leading(raw_bytes, needle=b'\x00'):
     """
     Finds the number of prefixed byte occurrences in the haystack.
@@ -68,7 +65,6 @@ def bytes_leading(raw_bytes, needle=b'\x00'):
     return leading
 
 
-# keep it
 def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
     """
     Convert an unsigned integer to bytes (base-256 representation)::

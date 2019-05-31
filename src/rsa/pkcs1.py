@@ -28,7 +28,19 @@ deduce where in the process the failure occurred. DO NOT PASS SUCH INFORMATION
 to your users.
 """
 
-import uhashlib
+try:
+    import uhashlib
+
+    HASH_METHODS = {
+        'SHA-1': uhashlib.sha1,
+        'SHA-256': uhashlib.sha256,
+    }
+except Exception:
+    import hashlib
+    HASH_METHODS = {
+        'SHA-1': hashlib.sha1,
+        'SHA-256': hashlib.sha256,
+    }
 
 from rsa import common, transform
 
@@ -36,11 +48,6 @@ from rsa import common, transform
 HASH_ASN1 = {
     'SHA-1': b'\x30\x21\x30\x09\x06\x05\x2b\x0e\x03\x02\x1a\x05\x00\x04\x14',
     'SHA-256': b'\x30\x31\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x05\x00\x04\x20',
-}
-
-HASH_METHODS = {
-    'SHA-1': uhashlib.sha1,
-    'SHA-256': uhashlib.sha256,
 }
 
 

@@ -102,8 +102,12 @@ class ConnectionHandler:
 
 class WeatherHandler:
 
-    def __init__(self):
-        pass
+    def __init__(self, key):
+        self.key = key
+
+        print('try out the key')
+        from rsa import pkcs1
+        pkcs1.sign(b'message', self.key, 'SHA-256')
 
     def handle(self, t, h):
         print('temperature = %.2f' % t)
@@ -116,6 +120,11 @@ from config import Config
 from machine import Pin
 import util
 import time
+import gc
+
+# enable garbage collection
+gc.enable()
+print('garbage collection threshold: ' + str(gc.threshold()))
 
 # load a config from a file
 config = Config('main.conf', 'key.json')
@@ -125,10 +134,12 @@ pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
               config.get('pump_switch_pin'),
               config.get('watering_interval'), config.get('watering_duration'))
 
+weather_handler = WeatherHandler(config.private_rsa_key())
+
 # initialize the DHT22 sensor which measures temperature and humidity
 weather = Weather(config.get('dht22_pin'),
                   config.get('measurement_interval'),
-                  WeatherHandler())
+                  weather_handler)
 
 # initilize the switch which enables the configuration mode
 # if the switch changes its state, then the board is going to reboot immediately

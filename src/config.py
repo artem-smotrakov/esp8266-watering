@@ -30,8 +30,8 @@ class Config:
         f.write(ujson.dumps(self.values))
         f.close()
 
-    # returns private key
-    def key():
+    # returns the private key
+    def private_rsa_key(self):
         return self.key
 
     # loads a configration from the specified file

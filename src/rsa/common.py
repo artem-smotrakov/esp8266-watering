@@ -26,7 +26,16 @@ class NotRelativePrimeError(ValueError):
         self.d = d
 
 
-# keep it
+# return the bit size of a non-negative integer
+# micropython 1.10 doesn't have int.bit_length() method
+# see https://github.com/micropython/micropython/issues/4065
+def bit_length(n):
+    bits = 0
+    while n >> bits:
+        bits += 1
+    return bits
+
+
 def bit_size(num):
     """
     Number of bits needed to represent a integer excluding any prefix
@@ -49,13 +58,18 @@ def bit_size(num):
         Returns the number of bits in the integer.
     """
 
+    if num == 0:
+        return 0
+
+    if num < 0:
+        num = abs(num)
+
     try:
-        return num.bit_length()
+        return bit_length(num)
     except AttributeError:
         raise TypeError('bit_size(num) only supports integers, not %r' % type(num))
 
 
-# keep it
 def byte_size(number):
     """
     Returns the number of bytes required to hold a specific long number.
@@ -130,7 +144,6 @@ def extended_gcd(a, b):
     return a, lx, ly  # Return only positive values
 
 
-# keep it
 def inverse(x, n):
     """Returns the inverse of x % n under multiplication, a.k.a x^-1 (mod n)
 

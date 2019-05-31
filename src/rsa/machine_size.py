@@ -35,7 +35,6 @@ else:
     MACHINE_WORD_SIZE = 64
 
 
-# keep it
 def get_word_alignment(num, force_arch=64,
                        _machine_word_size=MACHINE_WORD_SIZE):
     """

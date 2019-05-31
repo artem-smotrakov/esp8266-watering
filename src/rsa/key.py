@@ -29,6 +29,7 @@
 import rsa.common
 import rsa.core
 import rsa.randnum
+import gc
 
 
 DEFAULT_EXPONENT = 65537
@@ -55,7 +56,36 @@ class AbstractKey(object):
         See https://en.wikipedia.org/wiki/Blinding_%28cryptography%29
         """
 
-        return (message * pow(r, self.e, self.n)) % self.n
+        # MicroPython 1.10 doesn't support pow() with 3 parameters
+        t = self.pow(r, self.e, self.n)
+        return (message * t) % self.n
+
+    def check_memory(self):
+        if gc.mem_free() < 2048:
+            print('collect garbage, gc.mem_free() = ' + str(gc.mem_free()) + ' bytes available')
+            gc.collect()
+            print('gc.mem_free() = ' + str(gc.mem_free()))
+
+    def pow(self, a, b, n):
+        if b == 0:
+            return 1
+
+        r = 1
+        i = 0
+        while i < b:
+            r = r * a
+
+            try:
+                r = r % n
+            except MemoryError:
+                gc.collect()
+                r = r % n
+                print('we just had some problems with memory')
+                print('but successfully recovered: ' + str(gc.mem_free()))
+
+            i = i + 1
+
+        return r
 
     def unblind(self, blinded, r):
         """Performs blinding on the message using random number 'r'.
