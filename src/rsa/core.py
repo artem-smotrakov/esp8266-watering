@@ -20,6 +20,7 @@ This is the actual core RSA implementation, which is only defined
 mathematically on integers.
 """
 
+import rsa.common
 from rsa._compat import is_integer
 
 
@@ -43,4 +44,4 @@ def encrypt_int(message, ekey, n):
     if message > n:
         raise OverflowError("The message %i is too long for n=%i" % (message, n))
 
-    return pow(message, ekey, n)
+    return rsa.common.modular_pow(message, ekey, n)
