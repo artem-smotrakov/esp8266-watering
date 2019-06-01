@@ -125,7 +125,7 @@ def sign_hash(hash_value, priv_key, hash_method):
     padded = _pad_for_signing(cleartext, keylength)
 
     payload = transform.bytes2int(padded)
-    encrypted = priv_key.blinded_encrypt(payload)
+    encrypted = priv_key.encrypt(payload)
     block = transform.int2bytes(encrypted, keylength)
 
     return block
