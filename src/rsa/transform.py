@@ -65,6 +65,15 @@ def bytes_leading(raw_bytes, needle=b'\x00'):
     return leading
 
 
+# MicroPython 1.10 doesn't have rjust() method
+def rjust(string, width, sym):
+    if len(string) >= width:
+        return string
+    l = width - len(string)
+    prefix = sym * l
+    return prefix + string
+
+
 def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
     """
     Convert an unsigned integer to bytes (base-256 representation)::
@@ -132,10 +141,10 @@ def int2bytes(number, fill_size=None, chunk_size=None, overflow=False):
                     "Need %d bytes for number, but fill size is %d" %
                     (length, fill_size)
             )
-        raw_bytes = raw_bytes.rjust(fill_size, b'\x00')
+        raw_bytes = rjust(raw_bytes, fill_size, b'\x00')
     elif chunk_size and chunk_size > 0:
         remainder = length % chunk_size
         if remainder:
             padding_size = chunk_size - remainder
-            raw_bytes = raw_bytes.rjust(length + padding_size, b'\x00')
+            raw_bytes = rjust(raw_bytes, length + padding_size, b'\x00')
     return raw_bytes
