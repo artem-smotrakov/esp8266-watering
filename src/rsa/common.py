@@ -17,6 +17,9 @@
 """Common functionality shared by several modules."""
 
 
+from rsa._compat import is_integer
+
+
 class NotRelativePrimeError(ValueError):
     def __init__(self, a, b, d, msg=None):
         super(NotRelativePrimeError, self).__init__(
@@ -63,6 +66,9 @@ def bit_size(num):
 
     if num < 0:
         num = abs(num)
+
+    if not is_integer(num):
+        raise TypeError('not integer')
 
     try:
         return bit_length(num)
@@ -159,3 +165,19 @@ def inverse(x, n):
         raise NotRelativePrimeError(x, n, divider)
 
     return inv
+
+
+def modular_pow(base, exponent, modulus):
+    if modulus == 1:
+        return 0
+    # Assert :: (modulus - 1) * (modulus - 1) does not overflow base
+    result = 1
+    base = base % modulus
+    while exponent > 0:
+        if exponent % 2 == 1:
+            result = result * base
+            result = result % modulus
+        exponent = exponent >> 1
+        base = base * base
+        base = base % modulus
+    return result
