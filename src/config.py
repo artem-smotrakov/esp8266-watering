@@ -26,9 +26,8 @@ class Config:
 
     # stores the configuraion to the specified file
     def store(self):
-        f = open(self.filename, 'w')
-        f.write(ujson.dumps(self.values))
-        f.close()
+        with open(self.filename, 'w') as f:
+            f.write(ujson.dumps(self.values))
 
     # returns the private key
     def private_rsa_key(self):
@@ -39,17 +38,13 @@ class Config:
         if not config_filename in os.listdir():
             print('cannot find ' + config_filename)
             return {}
-        f = open(config_filename)
-        values = ujson.load(f)
-        f.close()
-        return values
+        with open(config_filename) as f:
+            return ujson.load(f)
 
     # loads a private RSA key from a json file
     def load_key(self, filename):
         if not filename in os.listdir():
             print('cannot find ' + filename)
             return
-        f = open(filename)
-        data = f.read()
-        f.close()
-        return PrivateKey.load_pkcs1(data)
+        with open(filename) as f:
+            return PrivateKey.load_pkcs1(f.read())
