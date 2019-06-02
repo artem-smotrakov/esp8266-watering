@@ -9,10 +9,6 @@ class WeatherHandler:
     def __init__(self, key):
         self.key = key
 
-        print('try out the key')
-        from rsa import pkcs1
-        pkcs1.sign(b'message', self.key, 'SHA-256')
-
     def handle(self, t, h):
         print('temperature = %.2f' % t)
         print('humidity    = %.2f' % h)
