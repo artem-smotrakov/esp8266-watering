@@ -47,9 +47,9 @@ class Config:
     # loads a private RSA key from a json file
     def load_key(self, filename):
         if not filename in os.listdir():
-            print('cannot find ' + self.filename)
+            print('cannot find ' + filename)
             return
         f = open(filename)
-        data = ujson.load(f)
+        data = f.read()
         f.close()
-        return PrivateKey(data['n'], data['e'], data['d'], data['p'], data['q'])
+        return PrivateKey.load_pkcs1(data)

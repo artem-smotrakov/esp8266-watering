@@ -26,6 +26,7 @@
 
 """
 
+import ujson
 import rsa.common
 import rsa.core
 
@@ -41,6 +42,44 @@ class AbstractKey(object):
         self.n = n
         self.e = e
 
+    @classmethod
+    def _load_pkcs1_json(cls, keyfile):
+        """Loads a key from a JSON file, implement in a subclass.
+        :param keyfile: contents of a JSON file that contains the key.
+        :type keyfile: bytes
+        :return: the loaded key
+        :rtype: AbstractKey
+        """
+
+    @classmethod
+    def load_pkcs1(cls, keyfile, format='JSON'):
+        """Loads a key.
+        :param keyfile: contents a file that contains the key.
+        :type keyfile: bytes
+        :param format: the format of the file to load
+        :type format: str
+        :return: the loaded key
+        :rtype: AbstractKey
+        """
+
+        methods = {
+            'JSON': cls._load_pkcs1_json
+        }
+
+        method = cls._assert_format_exists(format, methods)
+        return method(keyfile)
+
+    @staticmethod
+    def _assert_format_exists(file_format, methods):
+        """Checks whether the given file format exists in 'methods'.
+        """
+
+        try:
+            return methods[file_format]
+        except KeyError:
+            formats = ', '.join(sorted(methods.keys()))
+            raise ValueError('Unsupported format: %r, try one of %s' % (file_format,
+                                                                        formats))
 
 class PublicKey(AbstractKey):
     """Represents a public RSA key.
@@ -176,5 +215,22 @@ class PrivateKey(AbstractKey):
 
         return rsa.core.encrypt_int(message, self.d, self.n)
 
+    @classmethod
+    def _load_pkcs1_json(cls, keyfile):
+        """Loads a private key from a file.
+        The contents of the file should be like the following:
+        {
+            "q": ... ,
+            "e": ... ,
+            "d": ... ,
+            "p": ... ,
+            "n": ...
+        }
+        :param keyfile: contents of a JSON file that contains the key.
+        :return: a PrivateKey object
+        """
+
+        data = ujson.loads(keyfile)
+        return PrivateKey(data['n'], data['e'], data['d'], data['p'], data['q'])
 
 __all__ = ['PublicKey', 'PrivateKey']
