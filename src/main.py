@@ -56,7 +56,7 @@ config_mode_switch.irq(lambda pin: util.reboot())
 # the server provides a web form which updates the configuraion of the device
 # the server runs on http://192.168.4.1:80
 if config_mode_switch.value() == 1:
-    from http import HttpServer
+    from http.server import HttpServer
     from settings import ConnectionHandler
     print('enabled configuration mode')
     access_point = util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
