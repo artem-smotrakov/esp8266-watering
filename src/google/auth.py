@@ -1,11 +1,12 @@
 import ubinascii
 import ujson
+import ntptime
 from rsa import pkcs1
 
 # this class builds a JWT to request an access token
 # from the Google OAuth 2.0 Authorization Server using a service account
 # see https://developers.google.com/identity/protocols/OAuth2ServiceAccount
-class JWT:
+class JWTBuilder:
 
     def __init__(self):
         self.header = {}
@@ -30,8 +31,8 @@ class JWT:
 
     # set the time the assertion was issued,
     # specified as seconds since 00:00:00 UTC, January 1, 1970
-    def when(self, time):
-        self.claim['iat'] = time
+    def time(self, value):
+        self.claim['iat'] = value
 
     # set an RSA private key for signing a JWT
     def private_rsa_key(self, key):
@@ -52,3 +53,29 @@ class JWT:
         signature = pkcs1.sign(to_be_signed, self.key, 'SHA-256')
         encoded_signature = ubinascii.b2a_base64(signature)
         return '%s.%s' % (to_be_signed, encoded_signature)
+
+class ServiceAccount:
+
+    def __init__(self):
+        self.email = ''
+        self.scope = ''
+        self.key = None
+
+    def email(self, value):
+        self.email = email
+
+    def scope(self, value):
+        self.scope = scope
+
+    # set an RSA private key for signing a JWT
+    def private_rsa_key(self, key):
+        self.key = key
+
+    def token(self):
+        builder = JWTBuilder()
+        builder.service_account(self.email)
+        builder.scope(self.scope)
+        builder.private_rsa_key(self.key)
+        builder.time(ntptime.time())
+        jwt = builder.build()
+        # TODO
