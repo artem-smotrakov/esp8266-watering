@@ -41,6 +41,35 @@ class HTTPRequest:
             headers = headers + '%s: %s' % (key, value) + '\r\n'
         return '%s \r\n %s \r\n %s' % (first_line, headers, self._data)
 
+class HTTPResponse:
+
+    def __init__(self):
+        self._code = None
+        self._headers = {}
+        self._data = bytes()
+
+    @classmethod
+    def parse(cls, input):
+        line = input.readline().sprip()
+        version, self._code, reason = line.split()
+        length = 0
+        while True:
+            line = input.readline().strip()
+            if not line:
+                break
+            name, value = line.split()
+            self._headers[name.strip()] = value.strip()
+            if name == 'Content-Length':
+                length = int(value)
+        if length > 0:
+            self._data = input.read(length)
+
+    def data(self):
+        return self._data
+
+    def code(self):
+        return self._code
+
 class HttpClient:
 
     def __init__(self):
