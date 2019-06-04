@@ -2,6 +2,8 @@ import ubinascii
 import ujson
 import ntptime
 from rsa import pkcs1
+from http.core import HTTPRequest
+from http.client import HttpsClient
 
 # this class builds a JWT to request an access token
 # from the Google OAuth 2.0 Authorization Server using a service account
@@ -72,10 +74,27 @@ class ServiceAccount:
         self.key = key
 
     def token(self):
+
+        # prepare a JWT
         builder = JWTBuilder()
         builder.service_account(self.email)
         builder.scope(self.scope)
         builder.private_rsa_key(self.key)
         builder.time(ntptime.time())
         jwt = builder.build()
-        # TODO
+
+        # prepare a request
+        parameters = {}
+        parameters['grant_type'] = 'urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer'
+        parameters['assertion'] = jwt
+        request = HTTPRequest()
+        request.host('www.googleapis.com')
+        request.port(443)
+        request.path('/oauth2/v4/token')
+        request.method('POST')
+        request.data(parameters)
+
+        # send the request and extract a token
+        response = HttpsClient(request).connect()
+        auth_info = ujson.load(response.data())
+        return auth_info['access_token']

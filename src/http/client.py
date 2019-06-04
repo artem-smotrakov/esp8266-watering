@@ -18,10 +18,7 @@ from http.core import HTTPResponse
 
 class HttpsClient:
 
-    def __init__(sel):
-        self._request = None
-
-    def request(self, request):
+    def __init__(self, request):
         self._request = request
 
     def connect():
