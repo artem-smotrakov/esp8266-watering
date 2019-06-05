@@ -47,9 +47,9 @@ class JWTBuilder:
         time = ntptime.time()
         self._claim['iat'] = time
         self._claim['exp'] = time + self._expiration
-        encoded_header = binascii.b2a_base64(json.dumps(self._header))
-        encoded_claim = binascii.b2a_base64(json.dumps(self._claim))
-        to_be_signed = '%s.%s' % (encoded_header, encoded_claim)
+        encoded_header = binascii.b2a_base64(bytes(json.dumps(self._header), 'ascii'))
+        encoded_claim = binascii.b2a_base64(bytes(json.dumps(self._claim), 'ascii'))
+        to_be_signed = bytes('%s.%s' % (encoded_header, encoded_claim), 'ascii')
         signature = pkcs1.sign(to_be_signed, self._key, 'SHA-256')
         encoded_signature = binascii.b2a_base64(signature)
         return '%s.%s' % (to_be_signed, encoded_signature)
