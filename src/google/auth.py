@@ -47,11 +47,11 @@ class JWTBuilder:
         time = ntptime.time()
         self._claim['iat'] = time
         self._claim['exp'] = time + self._expiration
-        encoded_header = binascii.b2a_base64(bytes(json.dumps(self._header), 'ascii'))
-        encoded_claim = binascii.b2a_base64(bytes(json.dumps(self._claim), 'ascii'))
-        to_be_signed = bytes('%s.%s' % (encoded_header, encoded_claim), 'ascii')
-        signature = pkcs1.sign(to_be_signed, self._key, 'SHA-256')
-        encoded_signature = binascii.b2a_base64(signature)
+        encoded_header = binascii.b2a_base64(bytes(json.dumps(self._header), 'ascii')).strip().decode('ascii')
+        encoded_claim = binascii.b2a_base64(bytes(json.dumps(self._claim), 'ascii')).strip().decode('ascii')
+        to_be_signed = '%s.%s' % (encoded_header, encoded_claim)
+        signature = pkcs1.sign(bytes(to_be_signed, 'ascii'), self._key, 'SHA-256')
+        encoded_signature = binascii.b2a_base64(signature).strip().decode('ascii')
         return '%s.%s' % (to_be_signed, encoded_signature)
 
 class ServiceAccount:
