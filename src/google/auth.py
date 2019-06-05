@@ -67,27 +67,27 @@ class JWTBuilder:
 class ServiceAccount:
 
     def __init__(self):
-        self.email = ''
-        self.scope = ''
-        self.key = None
+        self._email = ''
+        self._scope = ''
+        self._key = None
 
-    def email(self, value):
-        self.email = email
+    def email(self, email):
+        self._email = email
 
-    def scope(self, value):
-        self.scope = scope
+    def scope(self, scope):
+        self._scope = scope
 
     # set an RSA private key for signing a JWT
     def private_rsa_key(self, key):
-        self.key = key
+        self._key = key
 
     def token(self):
 
         # prepare a JWT
         builder = JWTBuilder()
-        builder.service_account(self.email)
-        builder.scope(self.scope)
-        builder.private_rsa_key(self.key)
+        builder.service_account(self._email)
+        builder.scope(self._scope)
+        builder.private_rsa_key(self._key)
         builder.time(ntptime.time())
         jwt = builder.build()
 
