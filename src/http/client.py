@@ -28,5 +28,5 @@ class HttpsClient:
         with socket.socket() as s:
             s.connect((self._request.host(), self._request.port()))
             s = ssl.wrap_socket(s)
-            s.write(self._request.build().encode())
-            return HTTPResponse.parse(s)
+            s.write(bytes(self._request.build(), 'ascii'))
+            return HTTPResponse.parse(s.makefile("rwb"))
