@@ -33,19 +33,19 @@ class HTTPRequest:
         self._data = ''
         if isinstance(data, dict):
             for key, value in data.items():
-                self._data = self._data + '%s=%s' % (key, value) + '&'
-            self._data = self._data.strip('&')
+                self._data = self._data + "%s=%s" % (key, value) + "&"
+            self._data = self._data.strip("&")
         else:
             self._data = data
 
     def build(self):
-        first_line = '%s %s HTTP/1.0' % (self._method, self._path)
-        headers['Host'] = '%s:%d' % (self._host, self._port)
-        headers['Content-Length'] = len(self._data)
+        first_line = "%s %s HTTP/1.0" % (self._method, self._path)
+        self._headers['Host'] = "%s:%d" % (self._host, self._port)
+        self._headers['Content-Length'] = len(self._data)
         headers = ''
         for key, value in self._headers.items():
-            headers = headers + '%s: %s' % (key, value) + '\r\n'
-        return '%s \r\n %s \r\n %s' % (first_line, headers, self._data)
+            headers = headers + "%s: %s" % (key, value) + "\n"
+        return "%s\n%s\n%s" % (first_line, headers, self._data)
 
 class HTTPResponse:
 
@@ -56,7 +56,7 @@ class HTTPResponse:
 
     @classmethod
     def parse(cls, input):
-        line = input.readline().sprip()
+        line = input.readline().strip()
         version, self._code, reason = line.split()
         length = 0
         while True:
