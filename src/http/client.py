@@ -1,7 +1,7 @@
 try:
-    import usocket as _socket
+    import usocket as socket
 except:
-    import _socket
+    import socket
 
 try:
     import ussl as ssl
@@ -22,12 +22,11 @@ class HttpsClient:
     def __init__(self, request):
         self._request = request
 
-    def connect():
+    def connect(self):
         if not self._request:
             raise Exception('Holy cow! I do not have any HTTP request to send!')
-        addr = socket.getaddrinfo(self._request.host(), self._request.port())[0][-1]
         with socket.socket() as s:
-            s.connect(addr)
+            s.connect((self._request.host(), self._request.port()))
             s = ssl.wrap_socket(s)
             s.write(self._request.build().encode())
             return HTTPResponse.parse(s)
