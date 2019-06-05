@@ -85,11 +85,11 @@ class ServiceAccount:
         parameters['grant_type'] = 'urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer'
         parameters['assertion'] = jwt
         request = HTTPRequest()
-        request.host('www.googleapis.com')
-        request.port(443)
-        request.path('/oauth2/v4/token')
-        request.method('POST')
-        request.data(parameters)
+        request.set_host('www.googleapis.com')
+        request.set_port(443)
+        request.set_path('/oauth2/v4/token')
+        request.set_method('POST')
+        request.set_data(parameters)
 
         # send the request and extract a token
         response = HttpsClient(request).connect()

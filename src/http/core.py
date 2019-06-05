@@ -14,22 +14,22 @@ class HTTPRequest:
     def port(self):
         return self._port
 
-    def method(self, method):
+    def set_method(self, method):
         self._method = method
 
-    def host(self, host):
+    def set_host(self, host):
         self._host = host
 
-    def port(self, n):
+    def set_port(self, n):
         self._port = n
 
-    def path(self, path):
+    def set_path(self, path):
         self._path = path
 
-    def header(self, name, value):
+    def set_header(self, name, value):
         self._headers[name] = value
 
-    def data(self, data):
+    def set_data(self, data):
         self._data = ''
         if isinstance(data, dict):
             for key, value in data.items():
