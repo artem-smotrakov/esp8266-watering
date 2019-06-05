@@ -1,5 +1,13 @@
-import ubinascii
-import ujson
+try:
+    import ubinascii as binascii
+except:
+    import binascii
+
+try:
+    import ujson as json
+except:
+    import json
+
 import ntptime
 from rsa import pkcs1
 from http.core import HTTPRequest
@@ -49,11 +57,11 @@ class JWTBuilder:
     # build a JWT
     def build(self):
         self.claim['exp'] = time + self.expiration
-        encoded_header = ubinascii.b2a_base64(ujson.dumps(self.header))
-        encoded_claim = ubinascii.b2a_base64(ujson.dumps(self.claim))
+        encoded_header = binascii.b2a_base64(json.dumps(self.header))
+        encoded_claim = binascii.b2a_base64(json.dumps(self.claim))
         to_be_signed = '%s.%s' % (encoded_header, encoded_claim)
         signature = pkcs1.sign(to_be_signed, self.key, 'SHA-256')
-        encoded_signature = ubinascii.b2a_base64(signature)
+        encoded_signature = binascii.b2a_base64(signature)
         return '%s.%s' % (to_be_signed, encoded_signature)
 
 class ServiceAccount:
@@ -96,5 +104,5 @@ class ServiceAccount:
 
         # send the request and extract a token
         response = HttpsClient(request).connect()
-        auth_info = ujson.load(response.data())
+        auth_info = json.load(response.data())
         return auth_info['access_token']

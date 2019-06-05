@@ -26,7 +26,11 @@
 
 """
 
-import ujson
+try:
+    import ujson as json
+except:
+    import json
+
 import rsa.common
 import rsa.core
 
@@ -230,7 +234,7 @@ class PrivateKey(AbstractKey):
         :return: a PrivateKey object
         """
 
-        data = ujson.loads(keyfile)
+        data = json.loads(keyfile)
         return PrivateKey(data['n'], data['e'], data['d'], data['p'], data['q'])
 
 __all__ = ['PublicKey', 'PrivateKey']
