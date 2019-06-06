@@ -56,19 +56,38 @@ class HTTPResponse:
 
     @classmethod
     def parse(cls, input):
-        line = input.readline().strip()
-        version, self._code, reason = line.split()
+        response = HTTPResponse()
+
+        status_line = input.readline().strip().split()
+        response.set_code(status_line[1])
+
         length = 0
+        headers = {}
         while True:
-            line = input.readline().strip()
+            line = input.readline().decode('ascii').strip()
             if not line:
                 break
-            name, value = line.split()
-            self._headers[name.strip()] = value.strip()
+            i = line.index(' ')
+            name = line[0:i].strip()
+            value = line[i + 1:].strip()
+            headers[name] = value
             if name == 'Content-Length':
                 length = int(value)
+        response.set_headers(headers)
+
         if length > 0:
-            self._data = input.read(length)
+            response.set_data(input.read(length))
+
+        return response
+
+    def set_data(self, data):
+        self._data = data
+
+    def set_code(self, code):
+        self._code = code
+
+    def set_headers(self, headers):
+        self._headers = headers
 
     def data(self):
         return self._data
