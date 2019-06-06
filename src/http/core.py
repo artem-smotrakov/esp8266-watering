@@ -39,13 +39,13 @@ class HTTPRequest:
             self._data = data
 
     def build(self):
-        first_line = "%s %s HTTP/1.0" % (self._method, self._path)
-        self._headers['Host'] = "%s:%d" % (self._host, self._port)
+        first_line = "%s %s HTTP/1.1" % (self._method, self._path)
+        self._headers['Host'] = self._host
         self._headers['Content-Length'] = len(self._data)
         headers = ''
         for key, value in self._headers.items():
-            headers = headers + "%s: %s" % (key, value) + "\n"
-        return "%s\n%s\n%s" % (first_line, headers, self._data)
+            headers = headers + "%s: %s" % (key, value) + "\r\n"
+        return "%s\r\n%s\r\n%s" % (first_line, headers, self._data)
 
 class HTTPResponse:
 
@@ -63,20 +63,44 @@ class HTTPResponse:
 
         length = 0
         headers = {}
+        chunked = False
         while True:
             line = input.readline().decode('ascii').strip()
             if not line:
                 break
-            i = line.index(' ')
+            i = line.index(':')
             name = line[0:i].strip()
             value = line[i + 1:].strip()
             headers[name] = value
             if name == 'Content-Length':
                 length = int(value)
+            if name == 'Transfer-Encoding' and value == 'chunked':
+                chunked = True
         response.set_headers(headers)
 
-        if length > 0:
-            response.set_data(input.read(length).decode('ascii'))
+        data = b''
+        if chunked:
+            while True:
+                line = input.readline().decode('ascii').strip()
+                if not line:
+                    break
+                n = int(line, 16)
+                if n == 0:
+                    break
+                data += input.read(n)
+        elif length > 0:
+            data = input.read(length)
+        else:
+            while True:
+                try:
+                    bytes = input.read(1)
+                except OSError:
+                    break
+                if not bytes:
+                    break
+                data += bytes
+
+        response.set_data(data.decode('ascii'))
 
         return response
 
@@ -94,3 +118,6 @@ class HTTPResponse:
 
     def code(self):
         return self._code
+
+    def headers(self):
+        return self._headers
