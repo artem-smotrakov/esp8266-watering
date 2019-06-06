@@ -93,5 +93,10 @@ class ServiceAccount:
 
         # send the request and extract a token
         response = HttpsClient(request).connect()
-        auth_info = json.load(response.data())
-        return auth_info['access_token']
+        if response.code() != 200:
+            print('server returned %d, exit' % response.code())
+            return ''
+        if not response.data():
+            print('server returned no data, exit')
+            return ''
+        return json.loads(response.data())['access_token']

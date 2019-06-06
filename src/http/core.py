@@ -52,14 +52,14 @@ class HTTPResponse:
     def __init__(self):
         self._code = None
         self._headers = {}
-        self._data = bytes()
+        self._data = ''
 
     @classmethod
     def parse(cls, input):
         response = HTTPResponse()
 
         status_line = input.readline().strip().split()
-        response.set_code(status_line[1])
+        response.set_code(int(status_line[1]))
 
         length = 0
         headers = {}
@@ -76,7 +76,7 @@ class HTTPResponse:
         response.set_headers(headers)
 
         if length > 0:
-            response.set_data(input.read(length))
+            response.set_data(input.read(length).decode('ascii'))
 
         return response
 
