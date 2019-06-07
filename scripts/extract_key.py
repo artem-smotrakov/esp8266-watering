@@ -5,7 +5,7 @@ from rsa import PrivateKey
 with open(sys.argv[1], 'rb') as input:
     key = PrivateKey.load_pkcs1(input.read())
     d = {}
-    d['n'] = key.d
+    d['n'] = key.n
     d['e'] = key.e
     d['d'] = key.d
     d['p'] = key.p
