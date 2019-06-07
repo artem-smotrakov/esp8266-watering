@@ -26,7 +26,8 @@ class HttpsClient:
         if not self._request:
             raise Exception('Holy cow! I do not have any HTTP request to send!')
         with socket.socket() as s:
+            s.settimeout(3)
             s.connect((self._request.host(), self._request.port()))
             s = ssl.wrap_socket(s)
             s.write(bytes(self._request.build(), 'ascii'))
-            return HTTPResponse.parse(s.makefile("rwb"))
+            return HTTPResponse.parse(s.makefile('rwb'))
