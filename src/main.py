@@ -101,7 +101,6 @@ class ConnectionHandler:
 
 
 # entry point
-from weather import Weather
 from pump import Pumps
 from config import Config
 from machine import Pin
@@ -116,9 +115,6 @@ pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
               config.get('pump_switch_pin'),
               config.get('watering_interval'), config.get('watering_duration'))
 
-# initialize the DHT22 sensor which measures temperature and humidity
-weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
-
 # initilize the switch which enables the configuration mode
 # if the switch changes its state, then the board is going to reboot immediately
 # in order to turn on/off the configuration mode
@@ -130,7 +126,7 @@ config_mode_switch.irq(lambda pin: util.reboot())
 # the server provides a web form which updates the configuraion of the device
 # the server runs on http://192.168.4.1:80
 if config_mode_switch.value() == 1:
-    from http import HttpServer
+    from http.server import HttpServer
     print('enabled configuration mode')
     access_point = util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
     handler = ConnectionHandler(config)
@@ -145,6 +141,5 @@ util.connect_to_wifi(config.get('ssid'), config.get('password'))
 # in the loop, the board is going to check temperature and humidity
 # and also turn on the pumps according to the schedule specified by a user
 while True:
-    weather.check()
     pumps.check()
     time.sleep(1) # in seconds
