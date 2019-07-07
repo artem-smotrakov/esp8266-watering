@@ -26,6 +26,16 @@ FORM_TEMPLATE = """\
     <head>
         <title>Watering system configuration</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript">
+            function init() {
+                var s = document.getElementById('error_handling_options');
+                for (var i = 0; i < s.options.length; i++) {
+                    if (s.options[i].value == '%error_handling%') {
+                        s.options[i].selected = true;
+                    }
+                }
+            }
+        </script>
     </head>
     <body>
         <h2 style="font-size:10vw">Watering system configuration</h2>
@@ -40,9 +50,15 @@ FORM_TEMPLATE = """\
                 <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text" value="%watering_interval%"/></p>
                 <p style="width: 100%;">Duration:&nbsp;<input name="watering_duration" type="text" value="%watering_duration%"/></p>
             </div>
-            <h3 style="font-size:5vw">Measurement settings</h3>
+            <h3 style="font-size:5vw">Error handling</h3>
             <div style="width: 100%;">
-                <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text" value="%measurement_interval%"/></p>
+                <p style="width: 100%;">
+                    <select name="error_handling" id="error_handling_options">
+                        <option value="stop">Stop</option>
+                        <option value="reboot">Reboot</option>
+                        <option value="ignore">Ignore</option>
+                    </select>
+                </p>
             </div>
             <div>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
@@ -57,10 +73,14 @@ FORM_TEMPLATE = """\
 # (except the password for wi-fi network)
 def get_form(config):
     form = FORM_TEMPLATE
-    form = form.replace('%ssid%', str(config.get('ssid')))
-    form = form.replace('%watering_interval%', str(config.get('watering_interval')))
-    form = form.replace('%watering_duration%', str(config.get('watering_duration')))
-    form = form.replace('%measurement_interval%', str(config.get('measurement_interval')))
+    form = form.replace('%ssid%',
+                        str(config.get('ssid')))
+    form = form.replace('%watering_interval%',
+                        str(config.get('watering_interval')))
+    form = form.replace('%watering_duration%',
+                        str(config.get('watering_duration')))
+    form = form.replace('%error_handling%',
+                        str(config.get('error_handling')))
     return HTTP_RESPONSE % (len(form), form)
 
 # a handler for incoming HTTP connections
@@ -101,7 +121,6 @@ class ConnectionHandler:
 
 
 # entry point
-from weather import Weather
 from pump import Pumps
 from config import Config
 from machine import Pin
@@ -116,9 +135,6 @@ pumps = Pumps(config.get('first_pump_pin'), config.get('second_pump_pin'),
               config.get('pump_switch_pin'),
               config.get('watering_interval'), config.get('watering_duration'))
 
-# initialize the DHT22 sensor which measures temperature and humidity
-weather = Weather(config.get('dht22_pin'), config.get('measurement_interval'))
-
 # initilize the switch which enables the configuration mode
 # if the switch changes its state, then the board is going to reboot immediately
 # in order to turn on/off the configuration mode
@@ -130,7 +146,7 @@ config_mode_switch.irq(lambda pin: util.reboot())
 # the server provides a web form which updates the configuraion of the device
 # the server runs on http://192.168.4.1:80
 if config_mode_switch.value() == 1:
-    from http import HttpServer
+    from http.server import HttpServer
     print('enabled configuration mode')
     access_point = util.start_access_point(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
     handler = ConnectionHandler(config)
@@ -145,6 +161,14 @@ util.connect_to_wifi(config.get('ssid'), config.get('password'))
 # in the loop, the board is going to check temperature and humidity
 # and also turn on the pumps according to the schedule specified by a user
 while True:
-    weather.check()
-    pumps.check()
+    try:
+        pumps.check()
+    except:
+        if config.get('error_handling') == 'reboot':
+            util.reboot()
+        elif config.get('error_handling') == 'stop':
+            raise
+        else:
+            print('achtung! something wrong happened!')
+
     time.sleep(1) # in seconds
