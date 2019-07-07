@@ -40,10 +40,6 @@ FORM_TEMPLATE = """\
                 <p style="width: 100%;">Interval:&nbsp;<input name="watering_interval" type="text" value="%watering_interval%"/></p>
                 <p style="width: 100%;">Duration:&nbsp;<input name="watering_duration" type="text" value="%watering_duration%"/></p>
             </div>
-            <h3 style="font-size:5vw">Measurement settings</h3>
-            <div style="width: 100%;">
-                <p style="width: 100%;">Interval:&nbsp;<input name="measurement_interval" type="text" value="%measurement_interval%"/></p>
-            </div>
             <div>
                 <p style="width: 100%;"><input type="submit" value="Update"></p>
             </div>
@@ -60,7 +56,6 @@ def get_form(config):
     form = form.replace('%ssid%', str(config.get('ssid')))
     form = form.replace('%watering_interval%', str(config.get('watering_interval')))
     form = form.replace('%watering_duration%', str(config.get('watering_duration')))
-    form = form.replace('%measurement_interval%', str(config.get('measurement_interval')))
     return HTTP_RESPONSE % (len(form), form)
 
 # a handler for incoming HTTP connections
